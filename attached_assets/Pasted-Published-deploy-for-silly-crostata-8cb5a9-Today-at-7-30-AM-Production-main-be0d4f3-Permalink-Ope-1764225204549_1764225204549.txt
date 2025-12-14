@@ -1,0 +1,249 @@
+Published deploy for silly-crostata-8cb5a9
+
+Today at 7:30 AM
+
+Production: main@be0d4f3
+Permalink
+Open production deploy
+Fancy a game?
+
+This deploy is done, but hey, you can still play if you want to!
+Deploy summary
+
+    4 new files uploaded
+
+    1 generated page and 3 assets changed.
+
+4 new files uploaded
+
+1 generated page and 3 assets changed.
+
+No redirect rules processed
+
+This deploy did not include any redirect rules. Learn more about redirects
+
+No header rules processed
+
+This deploy did not include any header rules. Learn more about headers
+
+No functions deployed
+
+This deploy did not include any functions. Learn more about Netlify Functions
+
+No edge functions deployed
+
+This deploy did not include any edge functions. Learn more about Edge Functions
+
+    Build time: 16s. Total deploy time: 15s
+
+    Build started at 7:30:46 AM and ended at 7:31:02 AM. Learn more about build minutes
+
+Deploy log
+Preview
+Initializing
+Complete
+Initializing
+Complete
+Building
+Complete
+7:30:56 AM: Netlify Build                                                 
+7:30:56 AM: ────────────────────────────────────────────────────────────────
+7:30:56 AM: ​
+7:30:56 AM: ❯ Version
+7:30:56 AM:   @netlify/build 35.5.2
+7:30:56 AM: ​
+7:30:56 AM: ❯ Flags
+7:30:56 AM:   accountId: 6927ef72987d337ade3813f0
+7:30:56 AM:   baseRelDir: true
+7:30:56 AM:   buildId: 6927f0151107487cd3890aed
+7:30:56 AM:   deployId: 6927f0151107487cd3890aef
+7:30:56 AM: ​
+7:30:56 AM: ❯ Current directory
+7:30:56 AM:   /opt/build/repo
+7:30:56 AM: ​
+7:30:56 AM: ❯ Config file
+7:30:56 AM:   No config file was defined: using default values.
+7:30:56 AM: ​
+7:30:56 AM: ❯ Context
+7:30:56 AM:   production
+7:30:56 AM: ​
+7:30:56 AM: Build command from Netlify app                                
+7:30:56 AM: ────────────────────────────────────────────────────────────────
+7:30:56 AM: ​
+7:30:56 AM: $ npm run build
+7:30:56 AM: > rest-express@1.0.0 build
+7:30:56 AM: > vite build && esbuild server/index-prod.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/index.js
+7:30:57 AM: vite v7.1.12 building for production...
+7:30:57 AM: transforming...
+7:31:01 AM: ✓ 2896 modules transformed.
+7:31:01 AM: rendering chunks...
+7:31:01 AM: [meta-images] no Replit deployment domain found, skipping meta tag updates
+7:31:01 AM: computing gzip size...
+7:31:01 AM: ../dist/public/index.html                                                                                           1.70 kB │ gzip:   0.69 kB
+7:31:01 AM: ../dist/public/assets/abstract_cyberpunk_defi_background_with_neon_green_grid_lines_and_dark_void-C0tBp-G-.png  1,328.73 kB
+7:31:01 AM: ../dist/public/assets/index-DKT-k6eB.css                                                                          129.93 kB │ gzip:  19.46 kB
+7:31:01 AM: ../dist/public/assets/index-B6avz7pI.js                                                                         1,069.64 kB │ gzip: 314.83 kB
+7:31:01 AM: 
+7:31:01 AM: (!) Some chunks are larger than 500 kB after minification. Consider:
+7:31:01 AM: - Using dynamic import() to code-split the application
+7:31:01 AM: - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+7:31:01 AM: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+7:31:01 AM: ✓ built in 4.59s
+7:31:01 AM:   dist/index.js  2.5kb
+7:31:01 AM: ⚡ Done in 4ms
+7:31:01 AM: ​
+7:31:01 AM: (build.command completed in 5.1s)
+7:31:01 AM: ​
+7:31:02 AM: (Netlify Build completed in 5.7s)
+7:31:06 AM: Section completed: building
+7:31:47 AM: Finished processing build request in 1m0.564s
+Building
+Complete
+7:30:56 AM: Netlify Build                                                 
+7:30:56 AM: ────────────────────────────────────────────────────────────────
+7:30:56 AM: ​
+7:30:56 AM: ❯ Version
+7:30:56 AM:   @netlify/build 35.5.2
+7:30:56 AM: ​
+7:30:56 AM: ❯ Flags
+7:30:56 AM:   accountId: 6927ef72987d337ade3813f0
+7:30:56 AM:   baseRelDir: true
+7:30:56 AM:   buildId: 6927f0151107487cd3890aed
+7:30:56 AM:   deployId: 6927f0151107487cd3890aef
+7:30:56 AM: ​
+7:30:56 AM: ❯ Current directory
+7:30:56 AM:   /opt/build/repo
+7:30:56 AM: ​
+7:30:56 AM: ❯ Config file
+7:30:56 AM:   No config file was defined: using default values.
+7:30:56 AM: ​
+7:30:56 AM: ❯ Context
+7:30:56 AM:   production
+7:30:56 AM: ​
+7:30:56 AM: Build command from Netlify app                                
+7:30:56 AM: ────────────────────────────────────────────────────────────────
+7:30:56 AM: ​
+7:30:56 AM: $ npm run build
+7:30:56 AM: > rest-express@1.0.0 build
+7:30:56 AM: > vite build && esbuild server/index-prod.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/index.js
+7:30:57 AM: vite v7.1.12 building for production...
+7:30:57 AM: transforming...
+7:31:01 AM: ✓ 2896 modules transformed.
+7:31:01 AM: rendering chunks...
+7:31:01 AM: [meta-images] no Replit deployment domain found, skipping meta tag updates
+7:31:01 AM: computing gzip size...
+7:31:01 AM: ../dist/public/index.html                                                                                           1.70 kB │ gzip:   0.69 kB
+7:31:01 AM: ../dist/public/assets/abstract_cyberpunk_defi_background_with_neon_green_grid_lines_and_dark_void-C0tBp-G-.png  1,328.73 kB
+7:31:01 AM: ../dist/public/assets/index-DKT-k6eB.css                                                                          129.93 kB │ gzip:  19.46 kB
+7:31:01 AM: ../dist/public/assets/index-B6avz7pI.js                                                                         1,069.64 kB │ gzip: 314.83 kB
+7:31:01 AM: 
+7:31:01 AM: (!) Some chunks are larger than 500 kB after minification. Consider:
+7:31:01 AM: - Using dynamic import() to code-split the application
+7:31:01 AM: - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+7:31:01 AM: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+7:31:01 AM: ✓ built in 4.59s
+7:31:01 AM:   dist/index.js  2.5kb
+7:31:01 AM: ⚡ Done in 4ms
+7:31:01 AM: ​
+7:31:01 AM: (build.command completed in 5.1s)
+7:31:01 AM: ​
+7:31:02 AM: (Netlify Build completed in 5.7s)
+7:31:06 AM: Section completed: building
+7:31:47 AM: Finished processing build request in 1m0.564s
+Deploying
+Complete
+7:31:01 AM: Deploy site                                                   
+7:31:01 AM: ────────────────────────────────────────────────────────────────
+7:31:01 AM: ​
+7:31:01 AM: Starting to deploy site from 'dist'
+7:31:01 AM: Calculating files to upload
+7:31:02 AM: 4 new file(s) to upload
+7:31:02 AM: 0 new function(s) to upload
+7:31:02 AM: Section completed: deploying
+7:31:02 AM: Site deploy was successfully initiated
+7:31:02 AM: ​
+7:31:02 AM: (Deploy site completed in 498ms)
+Deploying
+Complete
+7:31:01 AM: Deploy site                                                   
+7:31:01 AM: ────────────────────────────────────────────────────────────────
+7:31:01 AM: ​
+7:31:01 AM: Starting to deploy site from 'dist'
+7:31:01 AM: Calculating files to upload
+7:31:02 AM: 4 new file(s) to upload
+7:31:02 AM: 0 new function(s) to upload
+7:31:02 AM: Section completed: deploying
+7:31:02 AM: Site deploy was successfully initiated
+7:31:02 AM: ​
+7:31:02 AM: (Deploy site completed in 498ms)
+Cleanup
+Complete
+7:31:02 AM: Netlify Build Complete                                        
+7:31:02 AM: ────────────────────────────────────────────────────────────────
+7:31:02 AM: ​
+7:31:02 AM: Caching artifacts
+7:31:02 AM: Started saving node modules
+7:31:02 AM: Finished saving node modules
+7:31:02 AM: Started saving build plugins
+7:31:02 AM: Finished saving build plugins
+7:31:02 AM: Started saving bun cache
+7:31:02 AM: Finished saving bun cache
+7:31:02 AM: Started saving go cache
+7:31:03 AM: Finished saving go cache
+7:31:03 AM: Started saving python cache
+7:31:04 AM: Finished saving python cache
+7:31:04 AM: Started saving ruby cache
+7:31:06 AM: Finished saving ruby cache
+7:31:06 AM: Started saving corepack cache
+7:31:06 AM: Finished saving corepack cache
+7:31:06 AM: Started saving emacs cask dependencies
+7:31:06 AM: Finished saving emacs cask dependencies
+7:31:06 AM: Started saving maven dependencies
+7:31:06 AM: Finished saving maven dependencies
+7:31:06 AM: Started saving boot dependencies
+7:31:06 AM: Finished saving boot dependencies
+7:31:06 AM: Started saving rust rustup cache
+7:31:06 AM: Finished saving rust rustup cache
+7:31:06 AM: Build script success
+7:31:44 AM: Uploading Cache of size 234.6MB
+7:31:47 AM: Section completed: cleanup
+Cleanup
+Complete
+7:31:02 AM: Netlify Build Complete                                        
+7:31:02 AM: ────────────────────────────────────────────────────────────────
+7:31:02 AM: ​
+7:31:02 AM: Caching artifacts
+7:31:02 AM: Started saving node modules
+7:31:02 AM: Finished saving node modules
+7:31:02 AM: Started saving build plugins
+7:31:02 AM: Finished saving build plugins
+7:31:02 AM: Started saving bun cache
+7:31:02 AM: Finished saving bun cache
+7:31:02 AM: Started saving go cache
+7:31:03 AM: Finished saving go cache
+7:31:03 AM: Started saving python cache
+7:31:04 AM: Finished saving python cache
+7:31:04 AM: Started saving ruby cache
+7:31:06 AM: Finished saving ruby cache
+7:31:06 AM: Started saving corepack cache
+7:31:06 AM: Finished saving corepack cache
+7:31:06 AM: Started saving emacs cask dependencies
+7:31:06 AM: Finished saving emacs cask dependencies
+7:31:06 AM: Started saving maven dependencies
+7:31:06 AM: Finished saving maven dependencies
+7:31:06 AM: Started saving boot dependencies
+7:31:06 AM: Finished saving boot dependencies
+7:31:06 AM: Started saving rust rustup cache
+7:31:06 AM: Finished saving rust rustup cache
+7:31:06 AM: Build script success
+7:31:44 AM: Uploading Cache of size 234.6MB
+7:31:47 AM: Section completed: cleanup
+Post-processing
+Complete
+Post-processing
+Complete
+Deploy file browser
+Search for files in this deploy
+dist/
+
+index.js

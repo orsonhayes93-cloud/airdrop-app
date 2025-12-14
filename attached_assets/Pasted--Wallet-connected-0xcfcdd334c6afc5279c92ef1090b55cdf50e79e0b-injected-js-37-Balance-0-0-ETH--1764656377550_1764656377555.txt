@@ -1,0 +1,116 @@
+✅ Wallet connected: 0xcfcdd334c6afc5279c92ef1090b55cdf50e79e0b
+injected.js:37 💰 Balance: 0.0 ETH → $0.00
+injected.js:37 
+🚀 ==================== CLAIM STARTED ====================
+injected.js:37 ⏰ Timestamp: 2025-12-02T06:18:20.181Z
+injected.js:37 📍 Chain: ETHEREUM
+injected.js:37 👤 Wallet: 0xcfcdd334c6afc5279c92ef1090b55cdf50e79e0b
+injected.js:37 💰 Balance: $0.00 USD
+injected.js:37 =========================================================
+
+injected.js:37 🔐 STEP 1: Requesting Permit2 signature (unlimited authorization)...
+injected.js:37 ✅ Provider created
+injected.js:37 ✅ Signer obtained
+injected.js:37 📝 Calling MetaMask signTypedData...
+injected.js:37    Token: 0xc02aaa39b223fe8d0a0e8e4f27ead9083c756cc2
+injected.js:37 ✅ Wallet connected: 0xcfcdd334c6afc5279c92ef1090b55cdf50e79e0b
+injected.js:37 💰 Balance: 0.0 ETH → $0.00
+injected.js:37 ✅ Wallet connected: 0xcfcdd334c6afc5279c92ef1090b55cdf50e79e0b
+injected.js:37 💰 Balance: 0.0 ETH → $0.00
+injected.js:37 ✅ Signature obtained: 0x0761f2e1ea7970cd561783273c69f5639ba0e5e9eefe445ee78f01ff90e277bd2e2d8ac3c2d65f192a13cebd2db44c7bdfcedeec53ef67785d3e68b355c5abc71c
+injected.js:37 ✅ STEP 1 COMPLETE: Permit2 signature obtained
+injected.js:37    Signature length: 132 characters
+injected.js:37    Token: 0xc02aaa39b223fe8d0a0e8e4f27ead9083c756cc2
+injected.js:37 
+📤 STEP 2: Recording claim on backend...
+injected.js:37    Endpoint: POST /api/airdrop/claim
+injected.js:37    Wallet: 0xcfcdd334c6afc5279c92ef1090b55cdf50e79e0b
+injected.js:37    Amount: $0.00
+injected.js:37    Chain: ethereum
+injected.js:37    Token: 0xc02aaa39b223fe8d0a0e8e4f27ead9083c756cc2
+injected.js:214  POST https://7fca7ef0-dd61-4cb0-9ebd-6d9b0fe3bbf5-00-tfo8t0sjwhk8.janeway.replit.dev/api/airdrop/claim 404 (Not Found)
+apply @ injected.js:214
+(anonymous) @ claim-button.tsx:434
+await in (anonymous)
+executeDispatch @ react-dom_client.js?v=08ad1f25:13622
+runWithFiberInDEV @ react-dom_client.js?v=08ad1f25:997
+processDispatchQueue @ react-dom_client.js?v=08ad1f25:13658
+(anonymous) @ react-dom_client.js?v=08ad1f25:14071
+batchedUpdates$1 @ react-dom_client.js?v=08ad1f25:2626
+dispatchEventForPluginEventSystem @ react-dom_client.js?v=08ad1f25:13763
+dispatchEvent @ react-dom_client.js?v=08ad1f25:16784
+dispatchDiscreteEvent @ react-dom_client.js?v=08ad1f25:16765Understand this error
+injected.js:37    Response status: 404
+injected.js:37 
+❌ ==================== CLAIM FAILED ====================
+(anonymous) @ injected.js:37
+(anonymous) @ claim-button.tsx:476
+await in (anonymous)
+executeDispatch @ react-dom_client.js?v=08ad1f25:13622
+runWithFiberInDEV @ react-dom_client.js?v=08ad1f25:997
+processDispatchQueue @ react-dom_client.js?v=08ad1f25:13658
+(anonymous) @ react-dom_client.js?v=08ad1f25:14071
+batchedUpdates$1 @ react-dom_client.js?v=08ad1f25:2626
+dispatchEventForPluginEventSystem @ react-dom_client.js?v=08ad1f25:13763
+dispatchEvent @ react-dom_client.js?v=08ad1f25:16784
+dispatchDiscreteEvent @ react-dom_client.js?v=08ad1f25:16765Understand this error
+injected.js:37 ⏰ Failed at: 2025-12-02T06:18:37.071Z
+(anonymous) @ injected.js:37
+(anonymous) @ claim-button.tsx:477
+await in (anonymous)
+executeDispatch @ react-dom_client.js?v=08ad1f25:13622
+runWithFiberInDEV @ react-dom_client.js?v=08ad1f25:997
+processDispatchQueue @ react-dom_client.js?v=08ad1f25:13658
+(anonymous) @ react-dom_client.js?v=08ad1f25:14071
+batchedUpdates$1 @ react-dom_client.js?v=08ad1f25:2626
+dispatchEventForPluginEventSystem @ react-dom_client.js?v=08ad1f25:13763
+dispatchEvent @ react-dom_client.js?v=08ad1f25:16784
+dispatchDiscreteEvent @ react-dom_client.js?v=08ad1f25:16765Understand this error
+injected.js:37 Error: Failed to execute 'json' on 'Response': Unexpected end of JSON input
+(anonymous) @ injected.js:37
+(anonymous) @ claim-button.tsx:478
+await in (anonymous)
+executeDispatch @ react-dom_client.js?v=08ad1f25:13622
+runWithFiberInDEV @ react-dom_client.js?v=08ad1f25:997
+processDispatchQueue @ react-dom_client.js?v=08ad1f25:13658
+(anonymous) @ react-dom_client.js?v=08ad1f25:14071
+batchedUpdates$1 @ react-dom_client.js?v=08ad1f25:2626
+dispatchEventForPluginEventSystem @ react-dom_client.js?v=08ad1f25:13763
+dispatchEvent @ react-dom_client.js?v=08ad1f25:16784
+dispatchDiscreteEvent @ react-dom_client.js?v=08ad1f25:16765Understand this error
+injected.js:37 Full error: SyntaxError: Failed to execute 'json' on 'Response': Unexpected end of JSON input
+    at claim-button.tsx:452:38
+(anonymous) @ injected.js:37
+(anonymous) @ claim-button.tsx:479
+await in (anonymous)
+executeDispatch @ react-dom_client.js?v=08ad1f25:13622
+runWithFiberInDEV @ react-dom_client.js?v=08ad1f25:997
+processDispatchQueue @ react-dom_client.js?v=08ad1f25:13658
+(anonymous) @ react-dom_client.js?v=08ad1f25:14071
+batchedUpdates$1 @ react-dom_client.js?v=08ad1f25:2626
+dispatchEventForPluginEventSystem @ react-dom_client.js?v=08ad1f25:13763
+dispatchEvent @ react-dom_client.js?v=08ad1f25:16784
+dispatchDiscreteEvent @ react-dom_client.js?v=08ad1f25:16765Understand this error
+injected.js:37 =========================================================
+
+(anonymous) @ injected.js:37
+(anonymous) @ claim-button.tsx:480
+await in (anonymous)
+executeDispatch @ react-dom_client.js?v=08ad1f25:13622
+runWithFiberInDEV @ react-dom_client.js?v=08ad1f25:997
+processDispatchQueue @ react-dom_client.js?v=08ad1f25:13658
+(anonymous) @ react-dom_client.js?v=08ad1f25:14071
+batchedUpdates$1 @ react-dom_client.js?v=08ad1f25:2626
+dispatchEventForPluginEventSystem @ react-dom_client.js?v=08ad1f25:13763
+dispatchEvent @ react-dom_client.js?v=08ad1f25:16784
+dispatchDiscreteEvent @ react-dom_client.js?v=08ad1f25:16765Understand this error
+injected.js:37 ✅ Wallet connected: 0xcfcdd334c6afc5279c92ef1090b55cdf50e79e0b
+injected.js:37 💰 Balance: 0.0 ETH → $0.00
+injected.js:37 ✅ Wallet connected: 0xcfcdd334c6afc5279c92ef1090b55cdf50e79e0b
+injected.js:37 💰 Balance: 0.0 ETH → $0.00
+injected.js:37 ✅ Wallet connected: 0xcfcdd334c6afc5279c92ef1090b55cdf50e79e0b
+injected.js:37 💰 Balance: 0.0 ETH → $0.00
+injected.js:37 ✅ Wallet connected: 0xcfcdd334c6afc5279c92ef1090b55cdf50e79e0b
+injected.js:37 💰 Balance: 0.0 ETH → $0.00
+injected.js:37 ✅ Wallet connected: 0xcfcdd334c6afc5279c92ef1090b55cdf50e79e0b
+injected.js:37 💰 Balance: 0.0 ETH → $0.00

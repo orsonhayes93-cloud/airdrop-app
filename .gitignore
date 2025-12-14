@@ -1,0 +1,14 @@
+node_modules
+dist
+.DS_Store
+server/public
+vite.config.ts.*
+*.tar.gz
+
+# Ignore secrets
+.env
+*.env
+
+# Ignore Replit files
+.replit
+replit.md
