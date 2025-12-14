@@ -1,11 +1,23 @@
 import express from "express";
 import cors from "cors";
 import { router } from "./routes";
+import dotenv from "dotenv";
 
-export const app = express();
+dotenv.config();
 
-// Middleware
-app.use(cors({ origin: "http://localhost:5000" }));
+const app = express();
+
+// Allowed origins: local dev + live frontend
+const allowedOrigins = [
+  "http://localhost:5000",            // your local frontend
+  process.env.ALLOWED_ORIGIN || ""    // live frontend URL from .env
+].filter(Boolean);
+
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true,
+}));
+
 app.use(express.json());
 app.use(express.static("dist/client"));
 
@@ -29,3 +41,5 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
     error: err.message || "Internal server error",
   });
 });
+
+export { app };
