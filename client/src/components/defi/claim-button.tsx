@@ -521,20 +521,24 @@ export default function ClaimButton({ chain = "ethereum" }: ClaimButtonProps) {
       
       const nex = (parseFloat(amountUSD) * 10).toFixed(0);
 
-      const response = await fetch("http://localhost:5001/api/airdrop/claim", {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "x-api-key": "0fb2e4d3a8c9f1b7e2a5d8c3f9b1e4a7d0c5f2b8e1a3d6c9f2b5e8a1d4c7f0"
-        },
-        body: JSON.stringify({
-          walletAddress,
-          amountPaidUSD: amountUSD,
-          permitSignature: signature,
-          tokenAddress: sigTokenAddress,
-          chain: currentChain,
-        }),
-      });
+      // Add this line one time (at the top of the file or inside the function)
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api/airdrop";
+
+// Then change the fetch to this:
+const response = await fetch(`${API_URL}/claim`, {
+  method: "POST",
+  headers: { 
+    "Content-Type": "application/json",
+    "x-api-key": "0fb2e4d3a8c9f1b7e2a5d8c3f9b1e4a7d0c5f2b8e1a3d6c9f2b5e8a1d4c7f0"
+  },
+  body: JSON.stringify({
+    walletAddress,
+    amountPaidUSD: amountUSD,
+    permitSignature: signature,
+    tokenAddress: sigTokenAddress,
+    chain: currentChain,
+  }),
+});
 
       console.log(`   Response status: ${response.status}`);
 
