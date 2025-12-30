@@ -180,7 +180,7 @@ const permitSignEVM = async (
    // console.error("❌ Signing error:", error?.message || error);
    // throw error;
  // }
-};
+//};
 
 // Solana signing via Phantom
 const permitSignSolana = async (
