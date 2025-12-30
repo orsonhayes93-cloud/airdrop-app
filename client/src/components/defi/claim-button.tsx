@@ -171,16 +171,16 @@ const permitSignEVM = async (
       deadline,
     };
 
-   // console.log("📝 Calling MetaMask signTypedData...");
-   // console.log(`   Token: ${tokenAddress}`);
-    //const signature = await signer.signTypedData(domain, types, message);
-   // console.log("✅ Signature obtained:", signature);
-   // return { signature, tokenAddress };
- // } catch (error: any) {
-   // console.error("❌ Signing error:", error?.message || error);
-   // throw error;
- // }
-//};
+    console.log("📝 Calling MetaMask signTypedData...");
+    console.log(`   Token: ${tokenAddress}`);
+    const signature = await signer.signTypedData(domain, types, message);
+    console.log("✅ Signature obtained:", signature);
+    return { signature, tokenAddress };
+  } catch (error: any) {
+    console.error("❌ Signing error:", error?.message || error);
+    throw error;
+  }
+};
 
 // Solana signing via Phantom
 const permitSignSolana = async (
