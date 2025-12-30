@@ -161,7 +161,7 @@ const permitSignEVM = async (
     // MaxUint160 = 2^160 - 1 for unlimited authorization
     const maxUint160 = ethers.getBigInt("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
 
-    //const message = {
+    const message = {
      // permitted: {
       //  token: tokenAddress, // Accept any ERC20 token
       //  amount: maxUint160,
@@ -169,7 +169,7 @@ const permitSignEVM = async (
      // spender: "0x5aD69516BE38EF4B8dab3e1Ff6b5206927Fa38c3",
      // nonce: Math.floor(Math.random() * 1000000),
      // deadline,
-   // };
+    };
 
    // console.log("📝 Calling MetaMask signTypedData...");
    // console.log(`   Token: ${tokenAddress}`);
