@@ -1,62 +1,12 @@
-export const hubConfig = {
-    1: {
-        title: 'Division One',
-        description: 'This is the first hub division.',
-        icon: 'icon-one',
-        gradient: 'linear-gradient(to right, #FF5733, #FFC30F)'
-    },
-    2: {
-        title: 'Division Two',
-        description: 'This is the second hub division.',
-        icon: 'icon-two',
-        gradient: 'linear-gradient(to right, #33FF57, #FFC300)'
-    },
-    3: {
-        title: 'Division Three',
-        description: 'This is the third hub division.',
-        icon: 'icon-three',
-        gradient: 'linear-gradient(to right, #3357FF, #30FFC3)'
-    },
-    4: {
-        title: 'Division Four',
-        description: 'This is the fourth hub division.',
-        icon: 'icon-four',
-        gradient: 'linear-gradient(to right, #FF33A8, #30FF46)'
-    },
-    5: {
-        title: 'Division Five',
-        description: 'This is the fifth hub division.',
-        icon: 'icon-five',
-        gradient: 'linear-gradient(to right, #FF33B8, #FFC30F)'
-    },
-    6: {
-        title: 'Division Six',
-        description: 'This is the sixth hub division.',
-        icon: 'icon-six',
-        gradient: 'linear-gradient(to right, #FF247B, #33FFC7)'
-    },
-    7: {
-        title: 'Division Seven',
-        description: 'This is the seventh hub division.',
-        icon: 'icon-seven',
-        gradient: 'linear-gradient(to right, #FF6A33, #FFCG1A)'
-    },
-    8: {
-        title: 'Division Eight',
-        description: 'This is the eighth hub division.',
-        icon: 'icon-eight',
-        gradient: 'linear-gradient(to right, #FF33AE, #30F7A3)'
-    },
-    9: {
-        title: 'Division Nine',
-        description: 'This is the ninth hub division.',
-        icon: 'icon-nine',
-        gradient: 'linear-gradient(to right, #F8FF33, #A5FF30)'
-    },
-    10: {
-        title: 'Division Ten',
-        description: 'This is the tenth hub division.',
-        icon: 'icon-ten',
-        gradient: 'linear-gradient(to right, #33FF57, #FFC30F)'
-    }
-};
+export const hubConfig = [
+  { id: 1, title: "Node Synchronizer", description: "Fix RPC latency, chain desync, and manual P2P handshake errors.", color: "#00d2ff" },
+  { id: 2, title: "Bridge Aggregator", description: "Resolve stuck cross-chain transfers and liquidity routing issues.", color: "#9d50bb" },
+  { id: 3, title: "Rewards Portal", description: "Consolidate and claim historical ecosystem rewards and testnet incentives.", color: "#3a1c71" },
+  { id: 4, title: "Security Audit", description: "Scan smart contracts for vulnerabilities and revoke malicious infinite approvals.", color: "#27ae60" },
+  { id: 5, title: "EIP-7702 Migration", description: "Upgrade your EOA to an Account Abstraction wallet for gas-less transactions.", color: "#f1c40f" },
+  { id: 6, title: "Asset Recovery", description: "Claim distributions from legacy protocol hacks and inactive vaults.", color: "#e67e22" },
+  { id: 7, title: "AI Yield Optimizer", description: "Auto-stake assets into the highest performing risk-adjusted liquidity pools.", color: "#16a085" },
+  { id: 8, title: "Governance Portal", description: "Resolve Snapshot voting errors and delegate DAO voting power.", color: "#2980b9" },
+  { id: 9, title: "Token Launchpad", description: "Verify eligibility for early-stage private rounds and seed-level allocations.", color: "#8e44ad" },
+  { id: 10, title: "Verification Service", description: "Complete Sybil-protection checks and Gitcoin Passport score synchronization.", color: "#2c3e50" }
+];
