@@ -1,17 +1,22 @@
 import { useRoute } from "wouter";
 import { motion } from "framer-motion";
 import { hubConfig } from "../config/hub-config"; 
-// Fixed lowercase paths to match your file system:
-import { ClaimButton } from "../components/claim-button";
-import { WalletConnectModal } from "../components/wallet-connect-modal";
+
+// THE FIX: Added /defi/ to the path to match your folder structure
+import { ClaimButton } from "../components/defi/claim-button";
+import { WalletConnectModal } from "../components/defi/wallet-connect-modal";
+
 import { Terminal } from "lucide-react";
 
 export default function HubPage() {
+  // 1. Get the ID from the URL using Wouter
   const [match, params] = useRoute("/hub/:id");
   const hubId = params?.id;
 
+  // 2. Find the specific theme data for this Hub
   const currentHub = hubConfig.find((h) => h.id === Number(hubId));
 
+  // 3. Error handling for invalid IDs
   if (!currentHub) {
     return (
       <div className="h-screen bg-black text-red-500 flex items-center justify-center font-mono uppercase">
@@ -26,6 +31,7 @@ export default function HubPage() {
       animate={{ opacity: 1, y: 0 }}
       className="min-h-screen bg-[#050505] text-white flex flex-col items-center pt-24 px-4 font-sans"
     >
+      {/* Dynamic Header */}
       <div className="text-center max-w-2xl mb-10">
         <h1 className="text-5xl font-bold mb-4 uppercase tracking-tighter" style={{ color: currentHub.color }}>
           {currentHub.title}
@@ -33,6 +39,7 @@ export default function HubPage() {
         <p className="text-gray-400 text-lg leading-relaxed">{currentHub.description}</p>
       </div>
 
+      {/* Main Action Card */}
       <div className="w-full max-w-md bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-6 shadow-2xl border-t-2" style={{ borderTopColor: currentHub.color }}>
         <div className="p-3 mb-6 rounded bg-black/60 border border-[#222] font-mono text-[10px] text-emerald-500/80">
           <p className="opacity-70">{'>'} SYSTEM_READY: v2.0.26</p>
@@ -40,7 +47,7 @@ export default function HubPage() {
           <p className="animate-pulse text-emerald-400">{'>'} AWAITING_SECURE_SIGNATURE...</p>
         </div>
         
-        {/* Pass hubId to track which division is converting in Neon */}
+        {/* Pass hubId to track which division is converting in Neon Database */}
         <ClaimButton hubId={Number(hubId)} />
       </div>
       
