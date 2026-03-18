@@ -6,6 +6,8 @@ import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 import { metaImagesPlugin } from "./vite-plugin-meta-images";
 
 export default defineConfig({
+  // ADD THIS LINE: It tells the browser to load everything from the top level
+  base: "/", 
   plugins: [
     react(),
     runtimeErrorOverlay(),
@@ -30,15 +32,18 @@ export default defineConfig({
       "@assets": path.resolve(import.meta.dirname, "attached_assets"),
     },
   },
-  css: {
-    postcss: {
-      plugins: [],
-    },
-  },
-  root: path.resolve(import.meta.dirname, "client"),
+  // CHANGED THIS: Pointing the root to the main project folder
+  root: path.resolve(import.meta.dirname), 
   build: {
-    outDir: path.resolve(import.meta.dirname, "dist/public"),
+    // UPDATED THIS: Standard output for Vercel
+    outDir: "dist", 
     emptyOutDir: true,
+    // ENSURE the index.html is found
+    rollupOptions: {
+      input: {
+        main: path.resolve(import.meta.dirname, "client/index.html"),
+      },
+    },
   },
   server: {
     host: "0.0.0.0",
