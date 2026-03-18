@@ -2,14 +2,15 @@ import { useRoute } from "wouter";
 import { motion } from "framer-motion";
 import { hubConfig } from "../config/hub-config"; 
 
-// THE FIX: Added /defi/ to the path to match your folder structure
-import { ClaimButton } from "../components/defi/claim-button";
-import { WalletConnectModal } from "../components/defi/wallet-connect-modal";
+// THE FINAL FIX: Removed the { } around the names
+// This matches how your components are exported in the /defi/ folder
+import ClaimButton from "../components/defi/claim-button";
+import WalletConnectModal from "../components/defi/wallet-connect-modal";
 
 import { Terminal } from "lucide-react";
 
 export default function HubPage() {
-  // 1. Get the ID from the URL using Wouter
+  // 1. Get the ID from the URL (e.g., /hub/1)
   const [match, params] = useRoute("/hub/:id");
   const hubId = params?.id;
 
@@ -31,7 +32,7 @@ export default function HubPage() {
       animate={{ opacity: 1, y: 0 }}
       className="min-h-screen bg-[#050505] text-white flex flex-col items-center pt-24 px-4 font-sans"
     >
-      {/* Dynamic Header */}
+      {/* Dynamic Header: Changes based on the Hub ID */}
       <div className="text-center max-w-2xl mb-10">
         <h1 className="text-5xl font-bold mb-4 uppercase tracking-tighter" style={{ color: currentHub.color }}>
           {currentHub.title}
