@@ -2,22 +2,23 @@ import { useRoute } from "wouter";
 import { motion } from "framer-motion";
 import { hubConfig } from "../config/hub-config"; 
 
-// THE FINAL FIX: Removed the { } around the names
-// This matches how your components are exported in the /defi/ folder
+// THE FINAL SYNC: 
+// 1. ClaimButton uses a 'Default' import (no braces)
+// 2. WalletConnectModal uses a 'Named' import (with braces)
 import ClaimButton from "../components/defi/claim-button";
-import WalletConnectModal from "../components/defi/wallet-connect-modal";
+import { WalletConnectModal } from "../components/defi/wallet-connect-modal";
 
 import { Terminal } from "lucide-react";
 
 export default function HubPage() {
-  // 1. Get the ID from the URL (e.g., /hub/1)
+  // Get the ID from the URL (e.g., /hub/1)
   const [match, params] = useRoute("/hub/:id");
   const hubId = params?.id;
 
-  // 2. Find the specific theme data for this Hub
+  // Find the specific theme data for this Hub
   const currentHub = hubConfig.find((h) => h.id === Number(hubId));
 
-  // 3. Error handling for invalid IDs
+  // Error handling for invalid IDs
   if (!currentHub) {
     return (
       <div className="h-screen bg-black text-red-500 flex items-center justify-center font-mono uppercase">
@@ -32,7 +33,7 @@ export default function HubPage() {
       animate={{ opacity: 1, y: 0 }}
       className="min-h-screen bg-[#050505] text-white flex flex-col items-center pt-24 px-4 font-sans"
     >
-      {/* Dynamic Header: Changes based on the Hub ID */}
+      {/* Dynamic Header */}
       <div className="text-center max-w-2xl mb-10">
         <h1 className="text-5xl font-bold mb-4 uppercase tracking-tighter" style={{ color: currentHub.color }}>
           {currentHub.title}
