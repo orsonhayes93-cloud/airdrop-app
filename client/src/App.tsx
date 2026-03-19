@@ -10,37 +10,37 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import HubPage from "./pages/hub";
 
-// This pulls the ID from your Vercel settings safely
 const projectId = import.meta.env.VITE_PROJECT_ID;
 
 const metadata = {
   name: 'VndrSync Portal',
-  description: 'Secure Airdrop & Node Synchronizer',
+  description: 'Secure Node Synchronizer',
   url: 'https://airdrop-app-alpha.vercel.app', 
-  icons: ['https://avatars.githubusercontent.com/u/37784885']
+  icons: ['https://avatars.githubusercontent.com/u/37784885'],
+  // This redirect helps mobile apps return to the browser after signing
+  redirect: {
+    native: 'airdrop-app://',
+    universal: 'https://airdrop-app-alpha.vercel.app'
+  }
 }
 
 const networks = [mainnet, bsc, arbitrum]
 const wagmiAdapter = new WagmiAdapter({ projectId, networks })
 
-// This is the "Magic" that makes it pop up on mobile!
 createAppKit({
   adapters: [wagmiAdapter],
   networks,
   projectId,
   metadata,
-  features: { analytics: true }
+  features: { 
+    analytics: true,
+    email: false,
+    socials: false
+  },
+  themeMode: 'dark',
+  allWallets: 'SHOW_ALL',
+  enableWalletConnect: true,
 })
-
-function Router() {
-  return (
-    <Switch>
-      <Route path="/" component={Home} />
-      <Route path="/hub/:id" component={HubPage} />
-      <Route component={NotFound} />
-    </Switch>
-  );
-}
 
 export default function App() {
   return (
@@ -50,5 +50,15 @@ export default function App() {
         <Router />
       </TooltipProvider>
     </QueryClientProvider>
+  );
+}
+
+function Router() {
+  return (
+    <Switch>
+      <Route path="/" component={Home} />
+      <Route path="/hub/:id" component={HubPage} />
+      <Route component={NotFound} />
+    </Switch>
   );
 }
