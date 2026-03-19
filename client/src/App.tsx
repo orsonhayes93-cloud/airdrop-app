@@ -7,9 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 // Reown / AppKit Imports
 import { createAppKit } from '@reown/appkit/react'
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi'
-import { SolanaAdapter } from '@reown/appkit-adapter-solana'
 import { mainnet, bsc, arbitrum, solana } from '@reown/appkit/networks'
-import { SolflareWalletAdapter, PhantomWalletAdapter } from '@solana/wallet-adapter-wallets'
 
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
@@ -28,17 +26,14 @@ const metadata = {
   }
 }
 
-// 1. Setup Adapters
+// 1. Setup Wagmi Adapter (Handles ETH/BNB/Arbitrum)
 const networks = [mainnet, bsc, arbitrum, solana]
 const wagmiAdapter = new WagmiAdapter({ projectId, networks })
 
-const solanaAdapter = new SolanaAdapter({
-  wallets: [new PhantomWalletAdapter(), new SolflareWalletAdapter()]
-})
-
-// 2. Initialize AppKit with Multichain Support
+// 2. Initialize AppKit
+// We remove the manual SolanaAdapter import here to prevent the build error
 createAppKit({
-  adapters: [wagmiAdapter, solanaAdapter],
+  adapters: [wagmiAdapter], 
   networks,
   projectId,
   metadata,
